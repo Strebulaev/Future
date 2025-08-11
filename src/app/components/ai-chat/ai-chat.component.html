@@ -1,0 +1,45 @@
+<!-- Файл: D:\future-planner\src\app\components\ai-chat\ai-chat.component.html -->
+<div class="chat-container mat-elevation-z4">
+    <mat-toolbar color="primary" class="chat-header">
+      <span>Чат с нейросетью</span>
+      <button mat-icon-button (click)="toggleChatMode()" [matTooltip]="chatMode === 'normal' ? 'Жесткий анализ' : 'Обычный режим'">
+        <mat-icon>{{ chatMode === 'normal' ? 'mood' : 'mood_bad' }}</mat-icon>
+      </button>
+    </mat-toolbar>
+  
+    <div class="chat-messages">
+      <mat-card *ngFor="let msg of messages" 
+                [class.user-message]="msg.sender === 'user'"
+                [class.ai-message]="msg.sender === 'ai'"
+                [class.error-message]="msg.isError">
+        <mat-card-content>
+          <div class="message-content">
+            <markdown ngPreserveWhitespaces>{{ msg.text }}</markdown>
+          </div>
+          <div class="message-time">
+            {{ msg.timestamp | date:'HH:mm' }}
+          </div>
+        </mat-card-content>
+      </mat-card>
+  
+      <div *ngIf="isWaiting" class="waiting-indicator">
+        <mat-spinner diameter="30"></mat-spinner>
+        <span>Нейросеть печатает...</span>
+      </div>
+    </div>
+  
+    <div class="chat-input-container">
+      <mat-form-field appearance="outline" class="full-width">
+        <textarea matInput [(ngModel)]="userInput" placeholder="Введите сообщение..." 
+                  (keydown.enter)="sendMessage()" cdkTextareaAutosize></textarea>
+      </mat-form-field>
+      <div class="action-buttons">
+        <button mat-raised-button color="primary" (click)="sendMessage()" [disabled]="!userInput.trim()">
+          <mat-icon>send</mat-icon> Отправить
+        </button>
+        <button mat-stroked-button (click)="analyzePlan()">
+          <mat-icon>analytics</mat-icon> Анализ плана
+        </button>
+      </div>
+    </div>
+  </div>

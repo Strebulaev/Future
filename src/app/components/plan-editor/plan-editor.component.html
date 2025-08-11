@@ -1,0 +1,202 @@
+<div class="editor-container">
+    <div class="toolbar">
+      <div class="plan-selector">
+        <mat-form-field appearance="outline" *ngIf="globalPlans.length > 0">
+          <mat-label>Текущий план</mat-label>
+          <mat-select [(value)]="currentPlan" (selectionChange)="selectPlan(currentPlan!)">
+            <mat-option *ngFor="let plan of globalPlans" [value]="plan">
+              {{ plan.title }} ({{ plan.startDate | date:'shortDate' }} - {{ plan.endDate | date:'shortDate' }})
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+  
+        <button mat-icon-button [matMenuTriggerFor]="planMenu" [disabled]="!currentPlan">
+          <mat-icon>more_vert</mat-icon>
+        </button>
+        <mat-menu #planMenu="matMenu">
+          <button mat-menu-item (click)="editCurrentPlan()">
+            <mat-icon>edit</mat-icon> Редактировать
+          </button>
+          <button mat-menu-item (click)="deleteCurrentPlan()">
+            <mat-icon>delete</mat-icon> Удалить
+          </button>
+          <button mat-menu-item (click)="exportPlan()" [disabled]="!currentPlan">
+            <mat-icon>download</mat-icon> Экспорт
+          </button>
+        </mat-menu>
+      </div>
+  
+      <div class="actions">
+        <button mat-raised-button color="primary" (click)="createNewPlan()">
+          <mat-icon>add</mat-icon> Новый план
+        </button>
+  
+        <input type="file" (change)="importPlan($event)" accept=".json" hidden #fileInput>
+        <button mat-raised-button (click)="fileInput.click()">
+          <mat-icon>upload</mat-icon> Импорт
+        </button>
+  
+        <button mat-raised-button color="accent" (click)="toggleViewMode()">
+          <mat-icon>{{ viewMode === 'graph' ? 'table_chart' : 'account_tree' }}</mat-icon>
+          {{ viewMode === 'graph' ? 'Таблица' : 'Граф' }}
+        </button>
+      </div>
+    </div>
+  
+    <div class="main-content" *ngIf="currentPlan">
+      <div class="days-section" *ngIf="viewMode === 'table'">
+        <mat-accordion multi>
+          <mat-expansion-panel *ngFor="let day of currentPlan.days; trackBy: trackByDayId" [expanded]="panelOpenState">
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                День {{ currentPlan.days.indexOf(day) + 1 }}: {{ day.date | date:'fullDate' }}
+              </mat-panel-title>
+              <mat-panel-description>
+                <span class="progress-badge">
+                  {{ getCompletedTasksCount(day) }}/{{ day.tasks.length }} выполнено
+                  <mat-progress-bar mode="determinate" [value]="getDayProgress(day)"></mat-progress-bar>
+                </span>
+              </mat-panel-description>
+            </mat-expansion-panel-header>
+  
+            <div class="day-actions">
+              <button mat-raised-button color="primary" (click)="addNewTask(day)">
+                <mat-icon>add</mat-icon> Добавить задачу
+              </button>
+              <button mat-raised-button color="warn" (click)="deleteDay(day)">
+                <mat-icon>delete</mat-icon> Удалить день
+              </button>
+            </div>
+  
+            <div class="tasks-list">
+              <mat-card *ngFor="let task of day.tasks; trackBy: trackByTaskId" class="task-card">
+                <mat-card-header>
+                  <mat-card-title>{{ task.name }}</mat-card-title>
+                  <mat-card-subtitle>
+                    {{ task.startTime }} - {{ task.endTime }} 
+                    <span class="priority-badge" [class.low]="task.priority === 'low'" 
+                          [class.medium]="task.priority === 'medium'" 
+                          [class.high]="task.priority === 'high'">
+                      {{ task.priority }}
+                    </span>
+                  </mat-card-subtitle>
+                </mat-card-header>
+                
+                <mat-card-content *ngIf="task.description">
+                  <p>{{ task.description }}</p>
+                </mat-card-content>
+                
+                <mat-card-actions align="end">
+                  <button mat-icon-button (click)="editTask(day, task)">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <button mat-icon-button (click)="deleteTask(day, task)">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                  <mat-checkbox [(ngModel)]="task.completed" (change)="toggleTaskCompletion(task)">
+                    Выполнено
+                  </mat-checkbox>
+                </mat-card-actions>
+              </mat-card>
+            </div>
+          </mat-expansion-panel>
+        </mat-accordion>
+  
+        <div class="add-day">
+          <button mat-raised-button color="primary" (click)="addNewDay()">
+            <mat-icon>add</mat-icon> Добавить день
+          </button>
+        </div>
+      </div>
+  
+      <div class="graph-section" *ngIf="viewMode === 'graph'">
+        <div class="graph-toolbar">
+          <button mat-icon-button (click)="zoomIn()" matTooltip="Увеличить">
+            <mat-icon>zoom_in</mat-icon>
+          </button>
+          <button mat-icon-button (click)="zoomOut()" matTooltip="Уменьшить">
+            <mat-icon>zoom_out</mat-icon>
+          </button>
+          <button mat-icon-button (click)="resetZoom()" matTooltip="Сбросить масштаб">
+            <mat-icon>zoom_out_map</mat-icon>
+          </button>
+          <button mat-icon-button (click)="centerContent()" matTooltip="Центрировать">
+            <mat-icon>center_focus_strong</mat-icon>
+          </button>
+          <button mat-icon-button [color]="isLinkingMode ? 'accent' : 'primary'" 
+                  (click)="toggleLinkingMode()" matTooltip="Режим связей">
+            <mat-icon>link</mat-icon>
+          </button>
+          <button mat-raised-button color="primary" (click)="addNewBranch()">
+            <mat-icon>add</mat-icon> Добавить ветвь
+          </button>
+        </div>
+  
+        <div #graphContainer class="graph-container"></div>
+  
+        <div class="selection-details" *ngIf="selectedBranch || selectedLink">
+          <mat-card>
+            <mat-card-header>
+              <mat-card-title>
+                {{ selectedBranch ? selectedBranch.name : 'Связь' }}
+              </mat-card-title>
+            </mat-card-header>
+            
+            <mat-card-content *ngIf="selectedBranch">
+              <p>{{ selectedBranch.description }}</p>
+              <div *ngIf="selectedBranch.arguments.length > 0">
+                <h4>Аргументы:</h4>
+                <ul>
+                  <li *ngFor="let arg of selectedBranch.arguments">{{ arg }}</li>
+                </ul>
+              </div>
+            </mat-card-content>
+  
+            <mat-card-content *ngIf="selectedLink">
+              <p>Связь между элементами</p>
+              <p *ngIf="selectedLink.label"><strong>Описание:</strong> {{ selectedLink.label }}</p>
+            </mat-card-content>
+  
+            <mat-card-actions align="end">
+              <button mat-button *ngIf="selectedBranch" (click)="editBranch(selectedBranch)">
+                <mat-icon>edit</mat-icon> Редактировать
+              </button>
+              <button mat-button *ngIf="selectedLink" (click)="editLink(selectedLink)">
+                <mat-icon>edit</mat-icon> Редактировать
+              </button>
+              <button mat-button color="warn" 
+                      *ngIf="selectedBranch" 
+                      (click)="deleteBranch(selectedBranch)">
+                <mat-icon>delete</mat-icon> Удалить
+              </button>
+              <button mat-button color="warn" 
+                      *ngIf="selectedLink" 
+                      (click)="deleteLink(selectedLink)">
+                <mat-icon>delete</mat-icon> Удалить
+              </button>
+            </mat-card-actions>
+          </mat-card>
+        </div>
+      </div>
+    </div>
+  
+    <div class="empty-state" *ngIf="!currentPlan">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>Нет активного плана</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <p>Создайте новый план или импортируйте существующий для начала работы</p>
+        </mat-card-content>
+        <mat-card-actions>
+          <button mat-raised-button color="primary" (click)="createNewPlan()">
+            <mat-icon>add</mat-icon> Создать план
+          </button>
+          <input type="file" (change)="importPlan($event)" accept=".json" hidden #fileInputEmpty>
+          <button mat-raised-button (click)="fileInputEmpty.click()">
+            <mat-icon>upload</mat-icon> Импорт плана
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+  </div>

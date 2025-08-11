@@ -1,0 +1,48 @@
+<h2 mat-dialog-title>{{ event.id ? 'Редактировать событие' : 'Новое событие' }}</h2>
+
+<div mat-dialog-content>
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Название</mat-label>
+    <input matInput [(ngModel)]="event.name" required>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Дата</mat-label>
+    <input matInput [matDatepicker]="picker" [(ngModel)]="event.date">
+    <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+    <mat-datepicker #picker></mat-datepicker>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Описание</mat-label>
+    <textarea matInput [(ngModel)]="event.description" rows="3"></textarea>
+  </mat-form-field>
+
+  <div class="arguments-section">
+    <h3>Аргументы</h3>
+    <div class="argument-list">
+      <div class="argument-item" *ngFor="let arg of event.arguments; let i = index">
+        <span>{{ arg }}</span>
+        <button mat-icon-button (click)="removeArgument(i)">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+    </div>
+    <div class="add-argument">
+      <mat-form-field appearance="outline" class="argument-input">
+        <mat-label>Новый аргумент</mat-label>
+        <input matInput [(ngModel)]="newArgument" (keyup.enter)="addArgument()">
+      </mat-form-field>
+      <button mat-raised-button color="primary" (click)="addArgument()">
+        <mat-icon>add</mat-icon> Добавить
+      </button>
+    </div>
+  </div>
+</div>
+
+<div mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Отмена</button>
+  <button mat-raised-button color="primary" (click)="onSave()">
+    <mat-icon>save</mat-icon> Сохранить
+  </button>
+</div>

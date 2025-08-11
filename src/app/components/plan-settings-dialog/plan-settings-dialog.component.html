@@ -1,0 +1,46 @@
+<h2 mat-dialog-title>Настройки плана</h2>
+
+<div mat-dialog-content [formGroup]="planForm">
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Название плана</mat-label>
+    <input matInput formControlName="title" required>
+    <mat-error *ngIf="planForm.get('title')?.hasError('required')">
+      Название обязательно
+    </mat-error>
+  </mat-form-field>
+
+  <div class="date-fields">
+    <mat-form-field appearance="outline">
+      <mat-label>Дата начала</mat-label>
+      <input matInput [matDatepicker]="startPicker" formControlName="startDate">
+      <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+      <mat-datepicker #startPicker></mat-datepicker>
+      <mat-error *ngIf="planForm.get('startDate')?.hasError('required')">
+        Дата начала обязательна
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Дата окончания</mat-label>
+      <input matInput [matDatepicker]="endPicker" formControlName="endDate">
+      <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+      <mat-datepicker #endPicker></mat-datepicker>
+      <mat-error *ngIf="planForm.get('endDate')?.hasError('required')">
+        Дата окончания обязательна
+      </mat-error>
+    </mat-form-field>
+  </div>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Цвет плана</mat-label>
+    <input matInput formControlName="color" [value]="planForm.get('color')?.value">
+    <input type="color" matInput formControlName="color">
+  </mat-form-field>
+</div>
+
+<div mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Отмена</button>
+  <button mat-raised-button color="primary" (click)="onSave()" [disabled]="!planForm.valid">
+    Сохранить
+  </button>
+</div>

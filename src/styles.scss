@@ -1,1 +1,82 @@
-/* You can add global styles to this file, and also import other style files */
+// Базовые сбросы
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    line-height: 1.5;
+  }
+  
+  // Навбар
+  .navbar {
+    display: flex;
+    background: #2563eb;
+    color: white;
+    padding: 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  
+    .nav-links {
+      margin-left: auto;
+      display: flex;
+      gap: 1rem;
+  
+      a {
+        color: white;
+        text-decoration: none;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+  
+        &:hover {
+          background: rgba(255,255,255,0.2);
+        }
+  
+        &.active {
+          background: rgba(255,255,255,0.3);
+        }
+      }
+    }
+  }
+  
+  // Основной контейнер
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem;
+  }
+  /* Файл: D:\future-planner\src\styles.scss */
+// Добавить в конец файла
+.mat-mdc-dialog-container {
+    --mdc-dialog-container-color: white;
+    --mdc-dialog-subhead-color: rgba(0, 0, 0, 0.87);
+    
+    .mdc-dialog__surface {
+      min-width: 400px;
+      max-width: 90vw;
+      overflow: visible !important;
+    }
+    
+    .mat-mdc-dialog-title {
+      font-size: 1.25rem !important;
+      font-weight: 500 !important;
+      padding: 24px 24px 16px !important;
+      margin: 0 !important;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .mat-mdc-dialog-content {
+      padding: 24px !important;
+      margin: 0 !important;
+      overflow: visible !important;
+    }
+    
+    .mat-mdc-dialog-actions {
+      padding: 16px 24px !important;
+      margin: 0 !important;
+      border-top: 1px solid #f0f0f0;
+    }
+  }

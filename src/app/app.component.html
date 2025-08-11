@@ -1,0 +1,13 @@
+
+<mat-toolbar color="primary">
+  <span>Future Planner</span>
+  <nav class="nav-links">
+    <a mat-button routerLink="/" routerLinkActive="active">Редактор планов</a>
+    <a mat-button routerLink="/ai-critic" routerLinkActive="active">Анализ нейросетью</a>
+    <a mat-button routerLink="/ai-chat" routerLinkActive="active">Чат-спор</a>
+  </nav>
+</mat-toolbar>
+
+<div class="app-container">
+  <router-outlet></router-outlet>
+</div>

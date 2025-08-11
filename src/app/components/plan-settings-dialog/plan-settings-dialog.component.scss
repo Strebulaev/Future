@@ -1,0 +1,62 @@
+/* Файл: D:\future-planner\src\app\components\plan-settings-dialog\plan-settings-dialog.component.scss */
+:host {
+    display: block;
+    min-width: 500px;
+  }
+  
+  .mat-mdc-dialog-container .mdc-dialog__surface {
+    border-radius: 12px !important;
+    overflow: visible !important;
+  }
+  
+  .mat-mdc-dialog-title {
+    padding: 24px 24px 16px !important;
+    margin: 0 !important;
+    font-size: 1.5rem !important;
+    font-weight: 500 !important;
+    color: #3f51b5 !important;
+  }
+  
+  .mat-mdc-dialog-content {
+    padding: 0 24px 24px !important;
+    margin: 0 !important;
+    overflow: visible !important;
+  }
+  
+  .mat-mdc-dialog-actions {
+    padding: 16px 24px !important;
+    margin: 0 !important;
+    justify-content: flex-end !important;
+    border-top: 1px solid #f0f0f0;
+  }
+  
+  .full-width {
+    width: 100%;
+    margin-bottom: 20px;
+  }
+  
+  .date-fields {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+  
+    mat-form-field {
+      flex: 1;
+    }
+  }
+  
+  .color-picker {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  
+    input[type="color"] {
+      width: 60px;
+      height: 60px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      cursor: pointer;
+      padding: 4px;
+      background: white;
+    }
+  }

@@ -1,0 +1,26 @@
+<div class="critic-container">
+    <h2>Жёсткий разбор нейросети</h2>
+  
+    <mat-form-field>
+      <mat-label>Выбери план</mat-label>
+      <mat-select [(ngModel)]="planId">
+        <mat-option *ngFor="let plan of planService.getAllPlans()" [value]="plan.id">
+          {{plan.title}}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  
+    <button 
+      mat-raised-button 
+      color="warn" 
+      (click)="analyzePlan()"
+      [disabled]="!planId || isLoading"
+    >
+      {{isLoading ? 'Анализируем...' : 'Разнести в хлам'}}
+    </button>
+  
+    <div class="critique-output" *ngIf="critique">
+      <h3>Вердикт:</h3>
+      <p>{{critique}}</p>
+    </div>
+  </div>

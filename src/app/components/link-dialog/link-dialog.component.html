@@ -1,0 +1,15 @@
+<h2 mat-dialog-title>Настройка связи</h2>
+
+<div mat-dialog-content>
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Подпись связи</mat-label>
+    <input matInput [(ngModel)]="data.label" placeholder="Описание связи">
+  </mat-form-field>
+</div>
+
+<div mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Отмена</button>
+  <button mat-raised-button color="primary" (click)="dialogRef.close(data)">
+    Сохранить
+  </button>
+</div>

@@ -1,0 +1,17 @@
+
+.app-container {
+    max-width: 1400px;
+    margin: 20px auto;
+    padding: 0 20px;
+  }
+  .nav-links {
+    margin-left: auto;
+  }
+  .active {
+    background: rgba(255,255,255,0.2);
+  }
+  mat-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }

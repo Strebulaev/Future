@@ -1,0 +1,2854 @@
+--- Файл: D:\future-planner\src\index.html ---
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>FuturePlanner</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <app-root></app-root>
+</body>
+</html>
+
+
+--- Файл: D:\future-planner\src\main.ts ---
+
+import { bootstrapApplication } from '@angular/platform-browser';
+import { appConfig } from './app/app.config';
+import { AppComponent } from './app/app.component';
+
+bootstrapApplication(AppComponent, appConfig)
+  .catch(err => console.error(err));
+
+--- Файл: D:\future-planner\src\styles.scss ---
+
+// Базовые сбросы
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    line-height: 1.5;
+  }
+  
+  // Навбар
+  .navbar {
+    display: flex;
+    background: #2563eb;
+    color: white;
+    padding: 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  
+    .nav-links {
+      margin-left: auto;
+      display: flex;
+      gap: 1rem;
+  
+      a {
+        color: white;
+        text-decoration: none;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+  
+        &:hover {
+          background: rgba(255,255,255,0.2);
+        }
+  
+        &.active {
+          background: rgba(255,255,255,0.3);
+        }
+      }
+    }
+  }
+  
+  // Основной контейнер
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem;
+  }
+
+--- Файл: D:\future-planner\src\app\app.component.html ---
+
+
+<mat-toolbar color="primary">
+  <span>Future Planner</span>
+  <nav class="nav-links">
+    <a mat-button routerLink="/" routerLinkActive="active">Редактор планов</a>
+    <a mat-button routerLink="/ai-critic" routerLinkActive="active">Анализ нейросетью</a>
+    <a mat-button routerLink="/ai-chat" routerLinkActive="active">Чат-спор</a>
+  </nav>
+</mat-toolbar>
+
+<div class="app-container">
+  <router-outlet></router-outlet>
+</div>
+
+--- Файл: D:\future-planner\src\app\app.component.scss ---
+
+
+.app-container {
+    max-width: 1400px;
+    margin: 20px auto;
+    padding: 0 20px;
+  }
+  .nav-links {
+    margin-left: auto;
+  }
+  .active {
+    background: rgba(255,255,255,0.2);
+  }
+  mat-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+
+--- Файл: D:\future-planner\src\app\app.component.ts ---
+
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule, RouterOutlet } from '@angular/router';
+
+@Component({
+  selector: 'app-root',
+  standalone: true,
+  imports: [CommonModule, RouterModule, RouterOutlet],
+  template: `
+    <nav class="navbar">
+      <span>Future Planner</span>
+      <div class="nav-links">
+        <a routerLink="/">Редактор плана</a>
+        <a routerLink="/ai-chat">Чат с нейросетью</a>
+      </div>
+    </nav>
+    
+    <router-outlet></router-outlet>
+  `,
+  styles: [`
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      background: #3f51b5;
+      color: white;
+      
+      .nav-links {
+        display: flex;
+        gap: 1rem;
+        
+        a {
+          color: white;
+          text-decoration: none;
+          padding: 0.5rem 1rem;
+          border-radius: 4px;
+          
+          &:hover {
+            background: rgba(255,255,255,0.2);
+          }
+        }
+      }
+    }
+  `]
+})
+export class AppComponent {}
+
+--- Файл: D:\future-planner\src\app\app.config.ts ---
+
+import { ApplicationConfig } from '@angular/core';
+import { provideRouter } from '@angular/router';
+import { provideHttpClient } from '@angular/common/http';
+import { provideAnimations } from '@angular/platform-browser/animations';
+import { routes } from './app.routes';
+import { provideMarkdown } from 'ngx-markdown';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideRouter(routes),
+    provideHttpClient(),
+    provideAnimations(),
+    provideMarkdown(),
+    MatProgressBarModule
+  ]
+};
+
+--- Файл: D:\future-planner\src\app\app.routes.ts ---
+
+import { Routes } from '@angular/router';
+
+export const routes: Routes = [
+  { 
+    path: '',
+    loadComponent: () => import('./components/plan-editor/plan-editor.component').then(m => m.PlanEditorComponent),
+    title: 'Редактор плана'
+  },
+  { 
+    path: 'ai-critic',
+    loadComponent: () => import('./components/ai-critic/ai-critic.component').then(m => m.AICriticComponent),
+    title: 'Анализ плана'
+  },
+  { 
+    path: 'ai-chat',
+    loadComponent: () => import('./components/ai-chat/ai-chat.component').then(m => m.AIChatComponent),
+    title: 'Чат с ИИ'
+  }
+];
+
+--- Файл: D:\future-planner\src\app\components\ai-chat\ai-chat.component.html ---
+
+<!-- Файл: D:\future-planner\src\app\components\ai-chat\ai-chat.component.html -->
+<div class="chat-container mat-elevation-z4">
+    <mat-toolbar color="primary" class="chat-header">
+      <span>Чат с нейросетью</span>
+      <button mat-icon-button (click)="toggleChatMode()" [matTooltip]="chatMode === 'normal' ? 'Жесткий анализ' : 'Обычный режим'">
+        <mat-icon>{{ chatMode === 'normal' ? 'mood' : 'mood_bad' }}</mat-icon>
+      </button>
+    </mat-toolbar>
+  
+    <div class="chat-messages">
+      <mat-card *ngFor="let msg of messages" 
+                [class.user-message]="msg.sender === 'user'"
+                [class.ai-message]="msg.sender === 'ai'"
+                [class.error-message]="msg.isError">
+        <mat-card-content>
+          <div class="message-content">
+            <markdown ngPreserveWhitespaces>{{ msg.text }}</markdown>
+          </div>
+          <div class="message-time">
+            {{ msg.timestamp | date:'HH:mm' }}
+          </div>
+        </mat-card-content>
+      </mat-card>
+  
+      <div *ngIf="isWaiting" class="waiting-indicator">
+        <mat-spinner diameter="30"></mat-spinner>
+        <span>Нейросеть печатает...</span>
+      </div>
+    </div>
+  
+    <div class="chat-input-container">
+      <mat-form-field appearance="outline" class="full-width">
+        <textarea matInput [(ngModel)]="userInput" placeholder="Введите сообщение..." 
+                  (keydown.enter)="sendMessage()" cdkTextareaAutosize></textarea>
+      </mat-form-field>
+      <div class="action-buttons">
+        <button mat-raised-button color="primary" (click)="sendMessage()" [disabled]="!userInput.trim()">
+          <mat-icon>send</mat-icon> Отправить
+        </button>
+        <button mat-stroked-button (click)="analyzePlan()">
+          <mat-icon>analytics</mat-icon> Анализ плана
+        </button>
+      </div>
+    </div>
+  </div>
+
+--- Файл: D:\future-planner\src\app\components\ai-chat\ai-chat.component.scss ---
+
+// Файл: D:\future-planner\src\app\components\ai-chat\ai-chat.component.scss
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 64px);
+    background: #f5f5f5;
+    border-radius: 8px;
+    overflow: hidden;
+  
+    .chat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 16px;
+    }
+  
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+  
+      mat-card {
+        max-width: 80%;
+        padding: 12px 16px;
+        border-radius: 16px;
+  
+        &.user-message {
+          align-self: flex-end;
+          background: #e3f2fd;
+          border-bottom-right-radius: 4px;
+        }
+  
+        &.ai-message {
+          align-self: flex-start;
+          background: white;
+          border-bottom-left-radius: 4px;
+        }
+  
+        &.error-message {
+          background: #ffebee;
+        }
+  
+        .message-content {
+          white-space: pre-wrap;
+          line-height: 1.5;
+        }
+  
+        .message-time {
+          font-size: 0.75rem;
+          color: #666;
+          text-align: right;
+          margin-top: 8px;
+        }
+      }
+    }
+  
+    .waiting-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      color: #666;
+    }
+  
+    .chat-input-container {
+      padding: 16px;
+      background: white;
+      border-top: 1px solid #e0e0e0;
+  
+      .full-width {
+        width: 100%;
+      }
+  
+      .action-buttons {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 8px;
+      }
+    }
+  }
+
+--- Файл: D:\future-planner\src\app\components\ai-chat\ai-chat.component.ts ---
+
+import { Component } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { AIChatService } from '../../services/ai-chat.service';
+import { PlanService } from '../../services/plan.service';
+import { MatButtonModule } from '@angular/material/button';
+import { MatInputModule } from '@angular/material/input';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatIconModule } from '@angular/material/icon';
+import { MatCardModule } from '@angular/material/card';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MarkdownModule } from 'ngx-markdown';
+interface ChatMessage {
+  sender: 'user' | 'ai';
+  text: string;
+  timestamp: Date;
+  isError?: boolean;
+}
+
+@Component({
+  selector: 'app-ai-chat',
+  standalone: true,
+  imports: [
+    CommonModule, 
+    FormsModule, 
+    DatePipe,
+    MatButtonModule,
+    MatInputModule,
+    MatProgressSpinnerModule,
+    MatIconModule,
+    MatCardModule,
+    MatToolbarModule,
+    MatTooltipModule,
+    MarkdownModule
+  ],
+  templateUrl: './ai-chat.component.html',
+  styleUrls: ['./ai-chat.component.scss']
+})
+export class AIChatComponent {
+  messages: ChatMessage[] = [];
+  userInput = '';
+  isWaiting = false;
+  chatMode: 'normal' | 'aggressive' = 'normal';
+
+  constructor(
+    private planService: PlanService,
+    private aiService: AIChatService
+  ) {}
+
+  async sendMessage(): Promise<void> {
+    if (!this.userInput.trim()) return;
+
+    const userMessage: ChatMessage = {
+      sender: 'user',
+      text: this.userInput,
+      timestamp: new Date()
+    };
+    
+    this.messages.push(userMessage);
+    const currentInput = this.userInput;
+    this.userInput = '';
+    this.isWaiting = true;
+    
+    try {
+      const aiResponse = await this.aiService.sendMessage([
+        {
+          role: 'system',
+          content: this.chatMode === 'aggressive' 
+            ? 'Ты эксперт по планированию, который жестко критикует идеи, указывая на слабые места' 
+            : 'Ты помощник по планированию, который дает конструктивные советы'
+        },
+        { role: 'user', content: currentInput }
+      ]);
+
+      this.messages.push({
+        sender: 'ai',
+        text: aiResponse,
+        timestamp: new Date()
+      });
+    } catch (error) {
+      this.messages.push({
+        sender: 'ai',
+        text: 'Произошла ошибка при обработке запроса. Пожалуйста, попробуйте позже.',
+        timestamp: new Date(),
+        isError: true
+      });
+    } finally {
+      this.isWaiting = false;
+    }
+  }
+
+  async analyzePlan(): Promise<void> {
+    const currentPlan = this.planService.getAllPlans()[0];
+    if (!currentPlan) return;
+    
+    this.userInput = `Проанализируй этот план: ${JSON.stringify({
+      title: currentPlan.title,
+      duration: `${currentPlan.days.length} дней`,
+      branches: currentPlan.branches.map(b => b.name),
+      tasksCount: currentPlan.days.reduce((sum, day) => sum + day.tasks.length, 0)
+    }, null, 2)}`;
+    await this.sendMessage();
+  }
+
+  toggleChatMode(): void {
+    this.chatMode = this.chatMode === 'normal' ? 'aggressive' : 'normal';
+    this.messages.push({
+      sender: 'ai',
+      text: `Режим изменен на ${this.chatMode === 'aggressive' ? 'жесткий анализ' : 'обычный'}`,
+      timestamp: new Date()
+    });
+  }
+}
+
+--- Файл: D:\future-planner\src\app\components\ai-critic\ai-critic.component.html ---
+
+<div class="critic-container">
+    <h2>Жёсткий разбор нейросети</h2>
+  
+    <mat-form-field>
+      <mat-label>Выбери план</mat-label>
+      <mat-select [(ngModel)]="planId">
+        <mat-option *ngFor="let plan of planService.getAllPlans()" [value]="plan.id">
+          {{plan.title}}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  
+    <button 
+      mat-raised-button 
+      color="warn" 
+      (click)="analyzePlan()"
+      [disabled]="!planId || isLoading"
+    >
+      {{isLoading ? 'Анализируем...' : 'Разнести в хлам'}}
+    </button>
+  
+    <div class="critique-output" *ngIf="critique">
+      <h3>Вердикт:</h3>
+      <p>{{critique}}</p>
+    </div>
+  </div>
+
+--- Файл: D:\future-planner\src\app\components\ai-critic\ai-critic.component.scss ---
+
+
+
+--- Файл: D:\future-planner\src\app\components\ai-critic\ai-critic.component.ts ---
+
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { MatOptionModule } from '@angular/material/core';
+import { MatButtonModule } from '@angular/material/button';
+import { AICriticService } from '../../services/ai-critic.service';
+import { PlanService } from '../../services/plan.service';
+
+@Component({
+  selector: 'app-ai-critic',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatOptionModule,
+    MatButtonModule
+  ],
+  templateUrl: './ai-critic.component.html',
+  styleUrls: ['./ai-critic.component.scss']
+})
+export class AICriticComponent {
+  planId: string = '';
+  critique: string = '';
+  isLoading: boolean = false;
+
+  constructor(
+    public planService: PlanService,
+    private aiService: AICriticService
+  ) {}
+
+  async analyzePlan(): Promise<void> {
+    this.isLoading = true;
+    const plan = this.planService.getAllPlans().find(p => p.id === this.planId);
+    if (!plan) return;
+
+    this.critique = await this.aiService.criticizePlan(JSON.stringify(plan));
+    this.isLoading = false;
+  }
+}
+
+--- Файл: D:\future-planner\src\app\components\branch-dialog\branch-dialog.component.html ---
+
+<h2 mat-dialog-title>{{ data.id ? 'Редактировать ветвь' : 'Новая ветвь' }}</h2>
+
+<div mat-dialog-content>
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Название</mat-label>
+    <input matInput [(ngModel)]="data.name" required>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Описание</mat-label>
+    <textarea matInput [(ngModel)]="data.description" rows="3"></textarea>
+  </mat-form-field>
+
+  <div class="arguments-section">
+    <h3>Аргументы</h3>
+    <div class="argument-list">
+      <div class="argument-item" *ngFor="let arg of data.arguments; let i = index">
+        <span>{{ arg }}</span>
+        <button mat-icon-button (click)="removeArgument(i)">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+    </div>
+    <div class="add-argument">
+      <mat-form-field appearance="outline" class="argument-input">
+        <mat-label>Новый аргумент</mat-label>
+        <input matInput [(ngModel)]="newArgument" (keyup.enter)="addArgument()">
+      </mat-form-field>
+      <button mat-raised-button color="primary" (click)="addArgument()">
+        <mat-icon>add</mat-icon> Добавить
+      </button>
+    </div>
+  </div>
+</div>
+
+<div mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Отмена</button>
+  <button mat-raised-button color="primary" [disabled]="!data.name" (click)="dialogRef.close(data)">
+    Сохранить
+  </button>
+</div>
+
+--- Файл: D:\future-planner\src\app\components\branch-dialog\branch-dialog.component.scss ---
+
+.full-width {
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+  
+  .arguments-section {
+    margin-top: 1.5rem;
+    
+    h3 {
+      margin-bottom: 0.5rem;
+      font-size: 1.1rem;
+      color: rgba(0, 0, 0, 0.87);
+    }
+  
+    .argument-list {
+      margin-bottom: 1rem;
+      max-height: 150px;
+      overflow-y: auto;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      padding: 0.5rem;
+  
+      .argument-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem;
+        border-bottom: 1px solid #f5f5f5;
+  
+        &:last-child {
+          border-bottom: none;
+        }
+  
+        button {
+          margin-left: 0.5rem;
+        }
+      }
+    }
+  
+    .add-argument {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+  
+      .argument-input {
+        flex: 1;
+      }
+    }
+  }
+
+--- Файл: D:\future-planner\src\app\components\branch-dialog\branch-dialog.component.ts ---
+
+import { Component, Inject } from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { FormsModule } from '@angular/forms';
+import { Branch } from '../../services/plan.model';
+import { CommonModule } from '@angular/common';
+import { MatIconModule } from "@angular/material/icon";
+
+@Component({
+  selector: 'app-branch-dialog',
+  standalone: true,
+  imports: [FormsModule, MatInputModule, MatButtonModule, CommonModule, MatIconModule],
+  templateUrl: './branch-dialog.component.html',
+  styleUrls: ['./branch-dialog.component.scss']
+})
+export class BranchDialogComponent {
+  newArgument = '';
+
+  constructor(
+    public dialogRef: MatDialogRef<BranchDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: Branch
+  ) {}
+
+  addArgument(): void {
+    if (this.newArgument.trim()) {
+      this.data.arguments.push(this.newArgument.trim());
+      this.newArgument = '';
+    }
+  }
+
+  removeArgument(index: number): void {
+    this.data.arguments.splice(index, 1);
+  }
+
+  onCancel(): void {
+    this.dialogRef.close();
+  }
+}
+
+--- Файл: D:\future-planner\src\app\components\confirm-dialog\confirm-dialog.component.html ---
+
+<h2 mat-dialog-title>{{ data.title }}</h2>
+
+<div mat-dialog-content>
+  <p>{{ data.message }}</p>
+</div>
+
+<div mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">{{ data.cancelText }}</button>
+  <button mat-raised-button color="warn" (click)="onConfirm()">
+    {{ data.confirmText }}
+  </button>
+</div>
+
+--- Файл: D:\future-planner\src\app\components\confirm-dialog\confirm-dialog.component.scss ---
+
+p {
+    margin: 0;
+    font-size: 16px;
+  }
+
+--- Файл: D:\future-planner\src\app\components\confirm-dialog\confirm-dialog.component.ts ---
+
+import { Component, Inject } from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MatButtonModule } from '@angular/material/button';
+
+@Component({
+  selector: 'app-confirm-dialog',
+  standalone: true,
+  imports: [MatButtonModule],
+  templateUrl: './confirm-dialog.component.html',
+  styleUrls: ['./confirm-dialog.component.scss']
+})
+export class ConfirmDialogComponent {
+  constructor(
+    public dialogRef: MatDialogRef<ConfirmDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: {
+      title: string;
+      message: string;
+      confirmText: string;
+      cancelText: string;
+    }
+  ) {}
+
+  onConfirm(): void {
+    this.dialogRef.close(true);
+  }
+
+  onCancel(): void {
+    this.dialogRef.close(false);
+  }
+}
+
+--- Файл: D:\future-planner\src\app\components\event-dialog\event-dialog.component.html ---
+
+<h2 mat-dialog-title>{{ event.id ? 'Редактировать событие' : 'Новое событие' }}</h2>
+
+<div mat-dialog-content>
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Название</mat-label>
+    <input matInput [(ngModel)]="event.name" required>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Дата</mat-label>
+    <input matInput [matDatepicker]="picker" [(ngModel)]="event.date">
+    <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+    <mat-datepicker #picker></mat-datepicker>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Описание</mat-label>
+    <textarea matInput [(ngModel)]="event.description" rows="3"></textarea>
+  </mat-form-field>
+
+  <div class="arguments-section">
+    <h3>Аргументы</h3>
+    <div class="argument-list">
+      <div class="argument-item" *ngFor="let arg of event.arguments; let i = index">
+        <span>{{ arg }}</span>
+        <button mat-icon-button (click)="removeArgument(i)">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+    </div>
+    <div class="add-argument">
+      <mat-form-field appearance="outline" class="argument-input">
+        <mat-label>Новый аргумент</mat-label>
+        <input matInput [(ngModel)]="newArgument" (keyup.enter)="addArgument()">
+      </mat-form-field>
+      <button mat-raised-button color="primary" (click)="addArgument()">
+        <mat-icon>add</mat-icon> Добавить
+      </button>
+    </div>
+  </div>
+</div>
+
+<div mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Отмена</button>
+  <button mat-raised-button color="primary" (click)="onSave()">
+    <mat-icon>save</mat-icon> Сохранить
+  </button>
+</div>
+
+--- Файл: D:\future-planner\src\app\components\event-dialog\event-dialog.component.scss ---
+
+.full-width {
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+  
+  .arguments-section {
+    margin-top: 1.5rem;
+    
+    h3 {
+      margin-bottom: 0.5rem;
+      font-size: 1.1rem;
+      color: rgba(0, 0, 0, 0.87);
+    }
+  
+    .argument-list {
+      margin-bottom: 1rem;
+      max-height: 150px;
+      overflow-y: auto;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      padding: 0.5rem;
+  
+      .argument-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem;
+        border-bottom: 1px solid #f5f5f5;
+  
+        &:last-child {
+          border-bottom: none;
+        }
+  
+        button {
+          margin-left: 0.5rem;
+        }
+      }
+    }
+  
+    .add-argument {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+  
+      .argument-input {
+        flex: 1;
+      }
+    }
+  }
+  
+  mat-dialog-actions {
+    padding: 1rem 0 0;
+    margin: 0;
+  }
+
+--- Файл: D:\future-planner\src\app\components\event-dialog\event-dialog.component.ts ---
+
+import { Component, Inject } from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MatInputModule } from '@angular/material/input';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+import { FormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { CommonModule } from '@angular/common';
+import { Event } from '../../services/plan.model';
+import { MatIconModule } from '@angular/material/icon'; 
+
+@Component({
+  selector: 'app-event-dialog',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatInputModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    MatIconModule,
+    MatButtonModule
+  ],
+  templateUrl: './event-dialog.component.html',
+  styleUrls: ['./event-dialog.component.scss']
+})
+export class EventDialogComponent {
+  event: Event;
+  newArgument = '';
+
+  constructor(
+    public dialogRef: MatDialogRef<EventDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: Event
+  ) {
+    this.event = { ...data };
+  }
+
+  addArgument(): void {
+    if (this.newArgument.trim()) {
+      this.event.arguments.push(this.newArgument.trim());
+      this.newArgument = '';
+    }
+  }
+
+  removeArgument(index: number): void {
+    this.event.arguments.splice(index, 1);
+  }
+
+  onSave(): void {
+    if (this.validateEvent()) {
+      this.dialogRef.close(this.event);
+    }
+  }
+
+  onCancel(): void {
+    this.dialogRef.close();
+  }
+
+  private validateEvent(): boolean {
+    if (!this.event.name || !this.event.name.trim()) {
+      alert('Название события обязательно');
+      return false;
+    }
+
+    if (!this.event.date) {
+      alert('Дата события обязательна');
+      return false;
+    }
+
+    return true;
+  }
+}
+
+--- Файл: D:\future-planner\src\app\components\home\home.component.html ---
+
+<p>home works!</p>
+
+
+--- Файл: D:\future-planner\src\app\components\home\home.component.scss ---
+
+
+
+--- Файл: D:\future-planner\src\app\components\home\home.component.ts ---
+
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-home',
+  imports: [],
+  templateUrl: './home.component.html',
+  styleUrl: './home.component.scss'
+})
+export class HomeComponent {
+
+}
+
+
+--- Файл: D:\future-planner\src\app\components\link-dialog\link-dialog.component.html ---
+
+<h2 mat-dialog-title>Настройка связи</h2>
+
+<div mat-dialog-content>
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Подпись связи</mat-label>
+    <input matInput [(ngModel)]="data.label" placeholder="Описание связи">
+  </mat-form-field>
+</div>
+
+<div mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Отмена</button>
+  <button mat-raised-button color="primary" (click)="dialogRef.close(data)">
+    Сохранить
+  </button>
+</div>
+
+--- Файл: D:\future-planner\src\app\components\link-dialog\link-dialog.component.scss ---
+
+.full-width {
+    width: 100%;
+  }
+
+--- Файл: D:\future-planner\src\app\components\link-dialog\link-dialog.component.ts ---
+
+import { Component, Inject } from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { FormsModule } from '@angular/forms';
+
+@Component({
+  selector: 'app-link-dialog',
+  standalone: true,
+  imports: [FormsModule, MatInputModule, MatButtonModule],
+  templateUrl: './link-dialog.component.html',
+  styleUrls: ['./link-dialog.component.scss']
+})
+export class LinkDialogComponent {
+  constructor(
+    public dialogRef: MatDialogRef<LinkDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: { label: string }
+  ) {}
+
+  onCancel(): void {
+    this.dialogRef.close();
+  }
+}
+
+--- Файл: D:\future-planner\src\app\components\plan-editor\plan-editor.component.html ---
+
+<div class="editor-container">
+    <div class="toolbar">
+      <div class="plan-selector">
+        <mat-form-field appearance="outline" *ngIf="globalPlans.length > 0">
+          <mat-label>Текущий план</mat-label>
+          <mat-select [(value)]="currentPlan" (selectionChange)="selectPlan(currentPlan!)">
+            <mat-option *ngFor="let plan of globalPlans" [value]="plan">
+              {{ plan.title }} ({{ plan.startDate | date:'shortDate' }} - {{ plan.endDate | date:'shortDate' }})
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+  
+        <button mat-icon-button [matMenuTriggerFor]="planMenu" [disabled]="!currentPlan">
+          <mat-icon>more_vert</mat-icon>
+        </button>
+        <mat-menu #planMenu="matMenu">
+          <button mat-menu-item (click)="editCurrentPlan()">
+            <mat-icon>edit</mat-icon> Редактировать
+          </button>
+          <button mat-menu-item (click)="deleteCurrentPlan()">
+            <mat-icon>delete</mat-icon> Удалить
+          </button>
+          <button mat-menu-item (click)="exportPlan()" [disabled]="!currentPlan">
+            <mat-icon>download</mat-icon> Экспорт
+          </button>
+        </mat-menu>
+      </div>
+  
+      <div class="actions">
+        <button mat-raised-button color="primary" (click)="createNewPlan()">
+          <mat-icon>add</mat-icon> Новый план
+        </button>
+  
+        <input type="file" (change)="importPlan($event)" accept=".json" hidden #fileInput>
+        <button mat-raised-button (click)="fileInput.click()">
+          <mat-icon>upload</mat-icon> Импорт
+        </button>
+  
+        <button mat-raised-button color="accent" (click)="toggleViewMode()">
+          <mat-icon>{{ viewMode === 'graph' ? 'table_chart' : 'account_tree' }}</mat-icon>
+          {{ viewMode === 'graph' ? 'Таблица' : 'Граф' }}
+        </button>
+      </div>
+    </div>
+  
+    <div class="main-content" *ngIf="currentPlan">
+      <div class="days-section" *ngIf="viewMode === 'table'">
+        <mat-accordion multi>
+          <mat-expansion-panel *ngFor="let day of currentPlan.days; trackBy: trackByDayId" [expanded]="panelOpenState">
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                День {{ currentPlan.days.indexOf(day) + 1 }}: {{ day.date | date:'fullDate' }}
+              </mat-panel-title>
+              <mat-panel-description>
+                <span class="progress-badge">
+                  {{ getCompletedTasksCount(day) }}/{{ day.tasks.length }} выполнено
+                  <mat-progress-bar mode="determinate" [value]="getDayProgress(day)"></mat-progress-bar>
+                </span>
+              </mat-panel-description>
+            </mat-expansion-panel-header>
+  
+            <div class="day-actions">
+              <button mat-raised-button color="primary" (click)="addNewTask(day)">
+                <mat-icon>add</mat-icon> Добавить задачу
+              </button>
+              <button mat-raised-button color="warn" (click)="deleteDay(day)">
+                <mat-icon>delete</mat-icon> Удалить день
+              </button>
+            </div>
+  
+            <div class="tasks-list">
+              <mat-card *ngFor="let task of day.tasks; trackBy: trackByTaskId" class="task-card">
+                <mat-card-header>
+                  <mat-card-title>{{ task.name }}</mat-card-title>
+                  <mat-card-subtitle>
+                    {{ task.startTime }} - {{ task.endTime }} 
+                    <span class="priority-badge" [class.low]="task.priority === 'low'" 
+                          [class.medium]="task.priority === 'medium'" 
+                          [class.high]="task.priority === 'high'">
+                      {{ task.priority }}
+                    </span>
+                  </mat-card-subtitle>
+                </mat-card-header>
+                
+                <mat-card-content *ngIf="task.description">
+                  <p>{{ task.description }}</p>
+                </mat-card-content>
+                
+                <mat-card-actions align="end">
+                  <button mat-icon-button (click)="editTask(day, task)">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <button mat-icon-button (click)="deleteTask(day, task)">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                  <mat-checkbox [(ngModel)]="task.completed" (change)="toggleTaskCompletion(task)">
+                    Выполнено
+                  </mat-checkbox>
+                </mat-card-actions>
+              </mat-card>
+            </div>
+          </mat-expansion-panel>
+        </mat-accordion>
+  
+        <div class="add-day">
+          <button mat-raised-button color="primary" (click)="addNewDay()">
+            <mat-icon>add</mat-icon> Добавить день
+          </button>
+        </div>
+      </div>
+  
+      <div class="graph-section" *ngIf="viewMode === 'graph'">
+        <div class="graph-toolbar">
+          <button mat-icon-button (click)="zoomIn()" matTooltip="Увеличить">
+            <mat-icon>zoom_in</mat-icon>
+          </button>
+          <button mat-icon-button (click)="zoomOut()" matTooltip="Уменьшить">
+            <mat-icon>zoom_out</mat-icon>
+          </button>
+          <button mat-icon-button (click)="resetZoom()" matTooltip="Сбросить масштаб">
+            <mat-icon>zoom_out_map</mat-icon>
+          </button>
+          <button mat-icon-button (click)="centerContent()" matTooltip="Центрировать">
+            <mat-icon>center_focus_strong</mat-icon>
+          </button>
+          <button mat-icon-button [color]="isLinkingMode ? 'accent' : 'primary'" 
+                  (click)="toggleLinkingMode()" matTooltip="Режим связей">
+            <mat-icon>link</mat-icon>
+          </button>
+          <button mat-raised-button color="primary" (click)="addNewBranch()">
+            <mat-icon>add</mat-icon> Добавить ветвь
+          </button>
+        </div>
+  
+        <div #graphContainer class="graph-container"></div>
+  
+        <div class="selection-details" *ngIf="selectedBranch || selectedLink">
+          <mat-card>
+            <mat-card-header>
+              <mat-card-title>
+                {{ selectedBranch ? selectedBranch.name : 'Связь' }}
+              </mat-card-title>
+            </mat-card-header>
+            
+            <mat-card-content *ngIf="selectedBranch">
+              <p>{{ selectedBranch.description }}</p>
+              <div *ngIf="selectedBranch.arguments.length > 0">
+                <h4>Аргументы:</h4>
+                <ul>
+                  <li *ngFor="let arg of selectedBranch.arguments">{{ arg }}</li>
+                </ul>
+              </div>
+            </mat-card-content>
+  
+            <mat-card-content *ngIf="selectedLink">
+              <p>Связь между элементами</p>
+              <p *ngIf="selectedLink.label"><strong>Описание:</strong> {{ selectedLink.label }}</p>
+            </mat-card-content>
+  
+            <mat-card-actions align="end">
+              <button mat-button *ngIf="selectedBranch" (click)="editBranch(selectedBranch)">
+                <mat-icon>edit</mat-icon> Редактировать
+              </button>
+              <button mat-button *ngIf="selectedLink" (click)="editLink(selectedLink)">
+                <mat-icon>edit</mat-icon> Редактировать
+              </button>
+              <button mat-button color="warn" 
+                      *ngIf="selectedBranch" 
+                      (click)="deleteBranch(selectedBranch)">
+                <mat-icon>delete</mat-icon> Удалить
+              </button>
+              <button mat-button color="warn" 
+                      *ngIf="selectedLink" 
+                      (click)="deleteLink(selectedLink)">
+                <mat-icon>delete</mat-icon> Удалить
+              </button>
+            </mat-card-actions>
+          </mat-card>
+        </div>
+      </div>
+    </div>
+  
+    <div class="empty-state" *ngIf="!currentPlan">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>Нет активного плана</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <p>Создайте новый план или импортируйте существующий для начала работы</p>
+        </mat-card-content>
+        <mat-card-actions>
+          <button mat-raised-button color="primary" (click)="createNewPlan()">
+            <mat-icon>add</mat-icon> Создать план
+          </button>
+          <input type="file" (change)="importPlan($event)" accept=".json" hidden #fileInputEmpty>
+          <button mat-raised-button (click)="fileInputEmpty.click()">
+            <mat-icon>upload</mat-icon> Импорт плана
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+  </div>
+
+--- Файл: D:\future-planner\src\app\components\plan-editor\plan-editor.component.scss ---
+
+.editor-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    padding: 1rem;
+    background-color: #f5f5f5;
+    
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      
+      .plan-selector {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        
+        mat-form-field {
+          min-width: 300px;
+        }
+      }
+      
+      .actions {
+        display: flex;
+        gap: 0.5rem;
+      }
+    }
+    
+    .main-content {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+      
+      .days-section {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+        padding-right: 0.5rem;
+        
+        mat-accordion {
+          flex: 1;
+          
+          mat-expansion-panel {
+            margin-bottom: 0.5rem;
+            
+            .progress-badge {
+              display: flex;
+              align-items: center;
+              gap: 0.5rem;
+              
+              mat-progress-bar {
+                flex: 1;
+                max-width: 100px;
+              }
+            }
+            
+            .day-actions {
+              display: flex;
+              gap: 0.5rem;
+              margin-bottom: 1rem;
+            }
+            
+            .tasks-list {
+              display: flex;
+              flex-direction: column;
+              gap: 0.5rem;
+              
+              .task-card {
+                .priority-badge {
+                  padding: 2px 8px;
+                  border-radius: 12px;
+                  font-size: 12px;
+                  margin-left: 8px;
+                  
+                  &.low {
+                    background-color: #4caf50;
+                    color: white;
+                  }
+                  
+                  &.medium {
+                    background-color: #ff9800;
+                    color: white;
+                  }
+                  
+                  &.high {
+                    background-color: #f44336;
+                    color: white;
+                  }
+                }
+              }
+            }
+          }
+        }
+        
+        .add-day {
+          margin-top: 1rem;
+          padding: 1rem;
+          background: white;
+          border-radius: 8px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+      }
+      
+      .graph-section {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        
+        .graph-toolbar {
+          display: flex;
+          gap: 0.5rem;
+          padding: 0.5rem;
+          background: white;
+          border-radius: 8px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .graph-container {
+          flex: 1;
+          background: white;
+          border-radius: 8px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .selection-details {
+          max-width: 400px;
+          margin-left: auto;
+          
+          mat-card {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          }
+        }
+      }
+    }
+    
+    .empty-state {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      
+      mat-card {
+        max-width: 500px;
+        text-align: center;
+        
+        mat-card-actions {
+          justify-content: center;
+          gap: 1rem;
+        }
+      }
+    }
+  }
+
+--- Файл: D:\future-planner\src\app\components\plan-editor\plan-editor.component.ts ---
+
+import { Component, ElementRef, ViewChild, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { PlanService } from '../../services/plan.service';
+import { GlobalPlan, DayPlan, Task, Branch, PlanLink, Plan } from '../../services/plan.model';
+import * as joint from 'jointjs';
+import { v4 as uuidv4 } from 'uuid';
+
+// Material Modules
+import { MatButtonModule } from '@angular/material/button';
+import { MatInputModule } from '@angular/material/input';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatSelectModule } from '@angular/material/select';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatCardModule } from '@angular/material/card';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatIconModule } from '@angular/material/icon';
+import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatSnackBar } from '@angular/material/snack-bar';
+
+// Components
+import { TaskDialogComponent } from '../task-dialog/task-dialog.component';
+import { BranchDialogComponent } from '../branch-dialog/branch-dialog.component';
+import { PlanSettingsDialogComponent } from '../plan-settings-dialog/plan-settings-dialog.component';
+import { LinkDialogComponent } from '../link-dialog/link-dialog.component';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+
+@Component({
+  selector: 'app-plan-editor',
+  standalone: true,
+  imports: [
+    CommonModule, FormsModule, DatePipe,
+    MatButtonModule, MatInputModule, MatDatepickerModule,
+    MatNativeDateModule, MatSelectModule, MatCheckboxModule,
+    MatCardModule, MatTabsModule, MatTooltipModule,
+    MatIconModule, MatDialogModule, MatExpansionModule,
+    MatMenuModule, MatProgressBarModule
+  ],
+  templateUrl: './plan-editor.component.html',
+  styleUrls: ['./plan-editor.component.scss']
+})
+export class PlanEditorComponent implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChild('graphContainer', { static: true }) graphContainer!: ElementRef;
+  
+  // State variables
+  globalPlans: GlobalPlan[] = [];
+  currentPlan: GlobalPlan | null = null;
+  selectedDay: DayPlan | null = null;
+  selectedBranch: Branch | null = null;
+  selectedLink: PlanLink | null = null;
+  selectedElement: any = null;
+  isLinkingMode = false;
+  zoomLevel = 1;
+  viewMode: 'graph' | 'table' = 'graph';
+  panelOpenState = false;
+
+  // JointJS variables
+  private graph!: joint.dia.Graph;
+  private paper!: joint.dia.Paper;
+  private shapes: { [id: string]: joint.shapes.standard.Rectangle } = {};
+  private links: joint.shapes.standard.Link[] = [];
+  private clipboard: { type: 'branch' | 'task', data: any } | null = null;
+
+  constructor(
+    private planService: PlanService,
+    private dialog: MatDialog,
+    private snackBar: MatSnackBar
+  ) {}
+
+  ngOnInit(): void {
+    this.loadPlans();
+  }
+
+  ngAfterViewInit(): void {
+    setTimeout(() => {
+      this.initGraph();
+      if (this.globalPlans.length === 0) {
+        this.showWelcomeMessage();
+      }
+    }, 100);
+  }
+
+  ngOnDestroy(): void {
+    if (this.paper) {
+      this.paper.remove();
+    }
+  }
+
+  private loadPlans(): void {
+    this.globalPlans = this.planService.getAllPlans();
+    if (this.globalPlans.length > 0) {
+      this.currentPlan = this.globalPlans[0];
+      this.selectedDay = this.currentPlan.days[0];
+    }
+  }
+
+  private showWelcomeMessage(): void {
+    this.snackBar.open('Начните с создания нового плана', 'Создать', {
+      duration: 5000
+    }).onAction().subscribe(() => {
+      this.createNewPlan();
+    });
+  }
+
+  private initGraph(): void {
+    if (!this.graphContainer?.nativeElement) {
+      console.error('Graph container not found');
+      return;
+    }
+
+    this.graph = new joint.dia.Graph({}, { cellNamespace: joint.shapes });
+    
+    this.paper = new joint.dia.Paper({
+      el: this.graphContainer.nativeElement,
+      model: this.graph,
+      width: '100%',
+      height: '600px',
+      gridSize: 10,
+      drawGrid: true,
+      background: { color: '#f8f9fa' },
+      cellViewNamespace: joint.shapes,
+      interactive: { 
+        linkMove: true,
+        elementMove: true,
+        arrowheadMove: true,
+        vertexAdd: true,
+        vertexMove: true,
+        vertexRemove: true
+      },
+      defaultConnectionPoint: { name: 'boundary', args: { offset: 10 } }
+    });
+
+    this.setupEventHandlers();
+    this.renderCurrentPlan();
+  }
+
+  private setupEventHandlers(): void {
+    // Blank click handler
+    this.paper.on('blank:pointerdown', (evt) => {
+      this.isLinkingMode = false;
+      this.selectedBranch = null;
+      this.selectedLink = null;
+      this.selectedElement = null;
+    });
+
+    // Element click handler
+    this.paper.on('element:pointerdown', (elementView, evt) => {
+      const element = elementView.model as joint.shapes.standard.Rectangle;
+      const branchId = (element.id as string).toString();
+      
+      if (this.isLinkingMode && this.selectedBranch && this.selectedBranch.id !== branchId) {
+        this.openLinkDialog(this.selectedBranch.id, branchId);
+        this.isLinkingMode = false;
+        this.selectedBranch = null;
+      } else {
+        this.selectedBranch = this.currentPlan?.branches.find(b => b.id === branchId) || null;
+        this.selectedElement = element;
+        this.selectedLink = null;
+      }
+    });
+
+    // Link click handler
+    this.paper.on('link:pointerdown', (linkView: joint.dia.LinkView) => {
+      const labels = linkView.model.get('labels') as Array<{ attrs: { text: { text: string } } }>;
+      this.selectedLink = {
+        source: linkView.model.get('source').id,
+        target: linkView.model.get('target').id,
+        label: labels?.[0]?.attrs?.text?.['text'] // Используем ['text'] вместо .text
+      };
+      this.selectedBranch = null;
+      this.selectedElement = linkView.model;
+    });
+    // Element position change handler
+    this.graph.on('change:position', (cell) => {
+      if (cell.isElement() && this.currentPlan) {
+        const branch = this.currentPlan.branches.find(b => b.id === cell.id);
+        if (branch) {
+          branch.position = cell.position();
+          this.saveCurrentPlan();
+        }
+      }
+    });
+  }
+
+  private renderCurrentPlan(): void {
+    if (!this.currentPlan) return;
+
+    this.graph.clear();
+    this.shapes = {};
+    this.links = [];
+
+    // Render branches
+    this.currentPlan.branches.forEach(branch => {
+      this.addBranchToGraph(branch);
+    });
+
+    // Render links
+    this.currentPlan.links?.forEach(link => {
+      this.createLink(link.source?.toString() || '', link.target?.toString() || '', link.label);
+    });
+  }
+
+  private addBranchToGraph(branch: Branch): void {
+    const shape = new joint.shapes.standard.Rectangle({
+      id: branch.id,
+      position: branch.position || { 
+        x: 100 + Math.random() * 200, 
+        y: 100 + Math.random() * 200 
+      },
+      size: { width: 200, height: 80 },
+      attrs: {
+        body: { 
+          fill: this.currentPlan?.color || '#3f51b5',
+          rx: 5, 
+          ry: 5,
+          stroke: '#1a237e',
+          strokeWidth: 2,
+          cursor: 'move'
+        },
+        label: { 
+          text: branch.name, 
+          fill: 'white',
+          fontSize: 14,
+          fontWeight: 'bold',
+          refY: '50%',
+          refX: '50%',
+          textAnchor: 'middle',
+          yAlignment: 'middle'
+        }
+      },
+      z: 2
+    });
+
+    this.graph.addCell(shape);
+    this.shapes[branch.id] = shape;
+  }
+
+  private createLink(sourceId: string, targetId: string, label?: string): void {
+    if (!this.shapes[sourceId] || !this.shapes[targetId]) return;
+
+    const link = new joint.shapes.standard.Link({
+      source: { id: sourceId },
+      target: { id: targetId },
+      labels: label ? [
+        {
+          position: 0.5,
+          attrs: {
+            text: {
+              text: label,
+              fill: '#4a148c',
+              fontSize: 12,
+              fontWeight: 'bold'
+            }
+          }
+        }
+      ] : [],
+      attrs: {
+        line: {
+          stroke: '#4a148c',
+          strokeWidth: 2,
+          targetMarker: {
+            'type': 'path',
+            'd': 'M 10 -5 0 0 10 5 z',
+            'fill': '#4a148c'
+          }
+        }
+      },
+      z: 1
+    });
+
+    this.graph.addCell(link);
+    this.links.push(link);
+  }
+
+  // UI Controls
+  toggleLinkingMode(): void {
+    this.isLinkingMode = !this.isLinkingMode;
+    this.paper.$el.css('cursor', this.isLinkingMode ? 'crosshair' : '');
+    if (!this.isLinkingMode) {
+      this.selectedBranch = null;
+    }
+  }
+
+  zoomIn(): void {
+    this.zoomLevel += 0.1;
+    this.paper.scale(this.zoomLevel, this.zoomLevel);
+  }
+
+  zoomOut(): void {
+    if (this.zoomLevel > 0.2) {
+      this.zoomLevel -= 0.1;
+      this.paper.scale(this.zoomLevel, this.zoomLevel);
+    }
+  }
+
+  resetZoom(): void {
+    this.zoomLevel = 1;
+    this.paper.scale(1, 1);
+  }
+
+  centerContent(): void {
+    this.paper.scaleContentToFit({ padding: 50 });
+  }
+
+  toggleViewMode(): void {
+    this.viewMode = this.viewMode === 'graph' ? 'table' : 'graph';
+  }
+
+  // Plan Management
+  createNewPlan(): void {
+    const dialogRef = this.dialog.open(PlanSettingsDialogComponent, {
+      width: '600px',
+      data: {
+        title: 'Новый план',
+        startDate: new Date(),
+        endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        color: '#3f51b5'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        const newPlan = this.planService.createNewPlan(
+          result.title,
+          result.startDate,
+          result.endDate,
+          result.color
+        );
+        
+        const globalPlan = this.convertToGlobalPlan(newPlan);
+        this.globalPlans.push(globalPlan);
+        this.currentPlan = globalPlan;
+        this.selectedDay = newPlan.days[0];
+        this.renderCurrentPlan();
+        this.saveCurrentPlan();
+        this.snackBar.open('План успешно создан', 'Закрыть', { duration: 3000 });
+      }
+    });
+  }
+  private convertToGlobalPlan(plan: Plan): GlobalPlan {
+    return {
+      ...plan,
+      description: plan.description || '',
+      color: plan.color || '#3f51b5',
+      links: plan.links || []
+    };
+  }
+  editCurrentPlan(): void {
+    if (!this.currentPlan) return;
+
+    const dialogRef = this.dialog.open(PlanSettingsDialogComponent, {
+      width: '600px',
+      data: {
+        title: this.currentPlan.title,
+        startDate: new Date(this.currentPlan.startDate),
+        endDate: new Date(this.currentPlan.endDate),
+        color: this.currentPlan.color
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && this.currentPlan) {
+        this.currentPlan.title = result.title;
+        this.currentPlan.startDate = result.startDate;
+        this.currentPlan.endDate = result.endDate;
+        this.currentPlan.color = result.color;
+        this.saveCurrentPlan();
+        this.renderCurrentPlan();
+        this.snackBar.open('План успешно обновлен', 'Закрыть', { duration: 3000 });
+      }
+    });
+  }
+
+  deleteCurrentPlan(): void {
+    if (!this.currentPlan) return;
+
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Удаление плана',
+        message: `Вы уверены, что хотите удалить план "${this.currentPlan.title}"?`,
+        confirmText: 'Удалить',
+        cancelText: 'Отмена'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (confirmed && this.currentPlan) {
+        this.planService.deletePlan(this.currentPlan.id);
+        this.globalPlans = this.globalPlans.filter(p => p.id !== this.currentPlan?.id);
+        this.currentPlan = this.globalPlans.length > 0 ? this.globalPlans[0] : null;
+        this.selectedDay = this.currentPlan?.days[0] || null;
+        this.renderCurrentPlan();
+        this.snackBar.open('План удален', 'Закрыть', { duration: 3000 });
+      }
+    });
+  }
+
+  selectPlan(plan: GlobalPlan): void {
+    this.currentPlan = plan;
+    this.selectedDay = plan.days[0];
+    this.renderCurrentPlan();
+  }
+
+  saveCurrentPlan(): void {
+    if (!this.currentPlan) return;
+
+    // Update links
+    this.currentPlan.links?.forEach(link => {
+      this.createLink(
+        link.source?.toString() || '', 
+        link.target?.toString() || '', 
+        (link as any).label // или link['label'] если определено в типе
+      );
+    });
+    this.planService.savePlan(this.currentPlan);
+  }
+
+  // Day Management
+  addNewDay(): void {
+    if (!this.currentPlan) return;
+
+    const lastDate = new Date(this.currentPlan.endDate);
+    const newDate = new Date(lastDate);
+    newDate.setDate(lastDate.getDate() + 1);
+
+    const newDay: DayPlan = {
+      id: uuidv4(),
+      date: newDate,
+      tasks: [],
+      notes: ''
+    };
+
+    this.currentPlan.days.push(newDay);
+    this.currentPlan.endDate = newDate;
+    this.saveCurrentPlan();
+    this.snackBar.open('День добавлен', 'Закрыть', { duration: 2000 });
+  }
+
+  deleteDay(day: DayPlan): void {
+    if (!this.currentPlan) return;
+
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Удаление дня',
+        message: `Удалить день ${day.date.toLocaleDateString()}? Все задачи будут потеряны.`,
+        confirmText: 'Удалить',
+        cancelText: 'Отмена'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (confirmed && this.currentPlan) {
+        this.currentPlan.days = this.currentPlan.days.filter(d => d.id !== day.id);
+        
+        // Update plan dates if needed
+        if (this.currentPlan.days.length > 0) {
+          const dates = this.currentPlan.days.map(d => d.date.getTime());
+          this.currentPlan.startDate = new Date(Math.min(...dates));
+          this.currentPlan.endDate = new Date(Math.max(...dates));
+        }
+        
+        this.saveCurrentPlan();
+        this.snackBar.open('День удален', 'Закрыть', { duration: 2000 });
+      }
+    });
+  }
+
+  // Task Management
+  addNewTask(day: DayPlan): void {
+    const dialogRef = this.dialog.open(TaskDialogComponent, {
+      width: '500px',
+      data: {
+        id: uuidv4(),
+        name: '',
+        startTime: '09:00',
+        endTime: '10:00',
+        description: '',
+        completed: false,
+        priority: 'medium'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe((result: Task) => {
+      if (result && this.currentPlan) {
+        day.tasks.push(result);
+        this.saveCurrentPlan();
+      }
+    });
+  }
+
+  editTask(day: DayPlan, task: Task): void {
+    const dialogRef = this.dialog.open(TaskDialogComponent, {
+      width: '500px',
+      data: { ...task }
+    });
+
+    dialogRef.afterClosed().subscribe((result: Task) => {
+      if (result && this.currentPlan) {
+        const index = day.tasks.findIndex(t => t.id === task.id);
+        if (index !== -1) {
+          day.tasks[index] = result;
+          this.saveCurrentPlan();
+        }
+      }
+    });
+  }
+
+  deleteTask(day: DayPlan, task: Task): void {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Удаление задачи',
+        message: `Удалить задачу "${task.name}"?`,
+        confirmText: 'Удалить',
+        cancelText: 'Отмена'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (confirmed && this.currentPlan) {
+        day.tasks = day.tasks.filter(t => t.id !== task.id);
+        this.saveCurrentPlan();
+        this.snackBar.open('Задача удалена', 'Закрыть', { duration: 2000 });
+      }
+    });
+  }
+
+  toggleTaskCompletion(task: Task): void {
+    task.completed = !task.completed;
+    this.saveCurrentPlan();
+  }
+
+  // Branch Management
+  addNewBranch(): void {
+    const dialogRef = this.dialog.open(BranchDialogComponent, {
+      width: '500px',
+      data: {
+        id: uuidv4(),
+        name: '',
+        description: '',
+        arguments: []
+      }
+    });
+
+    dialogRef.afterClosed().subscribe((result: Branch) => {
+      if (result && this.currentPlan) {
+        this.currentPlan.branches.push(result);
+        this.addBranchToGraph(result);
+        this.saveCurrentPlan();
+        this.snackBar.open('Ветвь добавлена', 'Закрыть', { duration: 2000 });
+      }
+    });
+  }
+
+  editBranch(branch: Branch): void {
+    const dialogRef = this.dialog.open(BranchDialogComponent, {
+      width: '500px',
+      data: { ...branch }
+    });
+
+    dialogRef.afterClosed().subscribe((result: Branch) => {
+      if (result && this.currentPlan) {
+        const index = this.currentPlan.branches.findIndex(b => b.id === branch.id);
+        if (index !== -1) {
+          this.currentPlan.branches[index] = result;
+          
+          // Update shape in graph
+          if (this.shapes[branch.id]) {
+            this.shapes[branch.id].attr('label/text', result.name);
+          }
+          
+          this.saveCurrentPlan();
+          this.snackBar.open('Ветвь обновлена', 'Закрыть', { duration: 2000 });
+        }
+      }
+    });
+  }
+
+  deleteBranch(branch: Branch): void {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Удаление ветви',
+        message: `Удалить ветвь "${branch.name}"? Все связи будут потеряны.`,
+        confirmText: 'Удалить',
+        cancelText: 'Отмена'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (confirmed && this.currentPlan) {
+        // Remove from plan
+        this.currentPlan.branches = this.currentPlan.branches.filter(b => b.id !== branch.id);
+        
+        // Remove links
+        this.currentPlan.links = this.currentPlan.links?.filter(
+          link => link.source !== branch.id && link.target !== branch.id
+        );
+        
+        // Remove from graph
+        if (this.shapes[branch.id]) {
+          this.shapes[branch.id].remove();
+          delete this.shapes[branch.id];
+        }
+        
+        // Remove connected links
+        this.links
+          .filter(link => {
+            const source = link.get('source')?.id;
+            const target = link.get('target')?.id;
+            return source === branch.id || target === branch.id;
+          })
+          .forEach(link => link.remove());
+        
+        this.links = this.links.filter(
+          link => {
+            const source = link.get('source')?.id;
+            const target = link.get('target')?.id;
+            return source !== branch.id && target !== branch.id;
+          }
+        );
+        
+        this.saveCurrentPlan();
+        this.snackBar.open('Ветвь удалена', 'Закрыть', { duration: 2000 });
+      }
+    });
+  }
+
+  // Link Management
+  openLinkDialog(sourceId: string, targetId: string): void {
+    const dialogRef = this.dialog.open(LinkDialogComponent, {
+      width: '400px',
+      data: {
+        label: ''
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && this.currentPlan) {
+        this.createLink(sourceId, targetId, result.label);
+        
+        if (!this.currentPlan.links) {
+          this.currentPlan.links = [];
+        }
+        
+        this.currentPlan.links.push({
+          source: sourceId,
+          target: targetId,
+          label: result.label
+        });
+        
+        this.saveCurrentPlan();
+      }
+    });
+  }
+
+  editLink(link: PlanLink): void {
+    const dialogRef = this.dialog.open(LinkDialogComponent, {
+      width: '400px',
+      data: {
+        label: link.label || ''
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && this.currentPlan) {
+        // Update link in graph
+        const jointLink = this.links.find(l => 
+          l.get('source')?.id === link.source && 
+          l.get('target')?.id === link.target
+        );
+        
+        if (jointLink) {
+          if (result.label) {
+            jointLink.labels([{
+              position: 0.5,
+              attrs: {
+                text: {
+                  text: result.label,
+                  fill: '#4a148c',
+                  fontSize: 12,
+                  fontWeight: 'bold'
+                }
+              }
+            }]);
+          } else {
+            jointLink.labels([]);
+          }
+        }
+        
+        // Update link in plan
+        const planLink = this.currentPlan?.links?.find(l => 
+          l.source === link.source && 
+          l.target === link.target
+        );
+        
+        if (planLink) {
+          planLink.label = result.label;
+        }
+        
+        this.saveCurrentPlan();
+      }
+    });
+  }
+
+  deleteLink(link: PlanLink): void {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Удаление связи',
+        message: 'Удалить эту связь?',
+        confirmText: 'Удалить',
+        cancelText: 'Отмена'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (confirmed && this.currentPlan) {
+        // Remove from plan
+        this.currentPlan.links = this.currentPlan.links?.filter(l => 
+          !(l.source === link.source && l.target === link.target)
+        );
+        
+        // Remove from graph
+        const jointLink = this.links.find(l => 
+          l.get('source')?.id === link.source && 
+          l.get('target')?.id === link.target
+        );
+        
+        if (jointLink) {
+          jointLink.remove();
+          this.links = this.links.filter(l => l !== jointLink);
+        }
+        
+        this.saveCurrentPlan();
+      }
+    });
+  }
+
+  // Clipboard operations
+  copyToClipboard(item: any, type: 'branch' | 'task'): void {
+    this.clipboard = { type, data: JSON.parse(JSON.stringify(item)) };
+    this.snackBar.open('Скопировано в буфер обмена', 'Закрыть', { duration: 2000 });
+  }
+
+  pasteFromClipboard(day?: DayPlan): void {
+    if (!this.clipboard || !this.currentPlan) return;
+
+    if (this.clipboard.type === 'branch') {
+      const newBranch = { ...this.clipboard.data, id: uuidv4() };
+      this.currentPlan.branches.push(newBranch);
+      this.addBranchToGraph(newBranch);
+      this.saveCurrentPlan();
+      this.snackBar.open('Ветвь вставлена', 'Закрыть', { duration: 2000 });
+    } 
+    else if (this.clipboard.type === 'task' && day) {
+      const newTask = { ...this.clipboard.data, id: uuidv4() };
+      day.tasks.push(newTask);
+      this.saveCurrentPlan();
+      this.snackBar.open('Задача вставлена', 'Закрыть', { duration: 2000 });
+    }
+  }
+
+  // Import/Export
+  exportPlan(): void {
+    if (!this.currentPlan) return;
+
+    const data = JSON.stringify(this.currentPlan, null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${this.currentPlan.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.json`;
+    a.click();
+    
+    URL.revokeObjectURL(url);
+    this.snackBar.open('План экспортирован', 'Закрыть', { duration: 3000 });
+  }
+
+  importPlan(event: any): void {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const content = e.target?.result as string;
+        const importedPlan = JSON.parse(content);
+        
+        // Basic validation
+        if (importedPlan && importedPlan.title && importedPlan.days && importedPlan.branches) {
+          // Generate new IDs to avoid conflicts
+          importedPlan.id = uuidv4();
+          importedPlan.days.forEach((day: DayPlan) => day.id = uuidv4());
+          importedPlan.branches.forEach((branch: Branch) => branch.id = uuidv4());
+          
+          this.globalPlans.push(importedPlan);
+          this.currentPlan = importedPlan;
+          this.selectedDay = this.currentPlan!.days[0];
+          this.renderCurrentPlan();
+          this.saveCurrentPlan();
+          this.snackBar.open('План успешно импортирован', 'Закрыть', { duration: 3000 });
+        } else {
+          throw new Error('Некорректный формат файла плана');
+        }
+      } catch (error) {
+        console.error('Ошибка импорта плана', error);
+        this.snackBar.open('Ошибка при импорте плана', 'Закрыть', { duration: 3000 });
+      }
+    };
+    reader.readAsText(file);
+    event.target.value = '';
+  }
+
+  // Utility methods
+  trackByBranchId(index: number, branch: Branch): string {
+    return branch.id;
+  }
+
+  trackByDayId(index: number, day: DayPlan): string {
+    return day.id;
+  }
+
+  trackByTaskId(index: number, task: Task): string {
+    return task.id;
+  }
+
+  getDayTasksCount(day: DayPlan): number {
+    return day.tasks.length;
+  }
+
+  getCompletedTasksCount(day: DayPlan): number {
+    return day.tasks.filter(t => t.completed).length;
+  }
+
+  getDayProgress(day: DayPlan): number {
+    return day.tasks.length > 0 
+      ? Math.round((this.getCompletedTasksCount(day) / day.tasks.length) * 100) 
+      : 0;
+  }
+}
+
+--- Файл: D:\future-planner\src\app\components\plan-settings-dialog\plan-settings-dialog.component.html ---
+
+<h2 mat-dialog-title>Настройки плана</h2>
+
+<div mat-dialog-content [formGroup]="planForm">
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Название плана</mat-label>
+    <input matInput formControlName="title" required>
+    <mat-error *ngIf="planForm.get('title')?.hasError('required')">
+      Название обязательно
+    </mat-error>
+  </mat-form-field>
+
+  <div class="date-fields">
+    <mat-form-field appearance="outline">
+      <mat-label>Дата начала</mat-label>
+      <input matInput [matDatepicker]="startPicker" formControlName="startDate">
+      <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+      <mat-datepicker #startPicker></mat-datepicker>
+      <mat-error *ngIf="planForm.get('startDate')?.hasError('required')">
+        Дата начала обязательна
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Дата окончания</mat-label>
+      <input matInput [matDatepicker]="endPicker" formControlName="endDate">
+      <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+      <mat-datepicker #endPicker></mat-datepicker>
+      <mat-error *ngIf="planForm.get('endDate')?.hasError('required')">
+        Дата окончания обязательна
+      </mat-error>
+    </mat-form-field>
+  </div>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Цвет плана</mat-label>
+    <input matInput formControlName="color" [value]="planForm.get('color')?.value">
+    <input type="color" matInput formControlName="color">
+  </mat-form-field>
+</div>
+
+<div mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Отмена</button>
+  <button mat-raised-button color="primary" (click)="onSave()" [disabled]="!planForm.valid">
+    Сохранить
+  </button>
+</div>
+
+--- Файл: D:\future-planner\src\app\components\plan-settings-dialog\plan-settings-dialog.component.scss ---
+
+.full-width {
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+  
+  .date-fields {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  
+    mat-form-field {
+      flex: 1;
+    }
+  }
+  
+  input[type="color"] {
+    width: 100%;
+    height: 40px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+--- Файл: D:\future-planner\src\app\components\plan-settings-dialog\plan-settings-dialog.component.ts ---
+
+import { Component, Inject } from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { FormControl, FormGroup, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatInputModule } from '@angular/material/input';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MatSelectModule } from '@angular/material/select';
+
+@Component({
+  selector: 'app-plan-settings-dialog',
+  standalone: true,
+  imports: [
+    FormsModule,
+    ReactiveFormsModule,
+    MatInputModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    MatButtonModule,
+    MatSelectModule,
+  ],
+  templateUrl: './plan-settings-dialog.component.html',
+  styleUrls: ['./plan-settings-dialog.component.scss']
+})
+export class PlanSettingsDialogComponent {
+  planForm = new FormGroup({
+    title: new FormControl('', [Validators.required]),
+    startDate: new FormControl(new Date(), [Validators.required]),
+    endDate: new FormControl(new Date(), [Validators.required]),
+    color: new FormControl('#3f51b5', [Validators.required])
+  });
+
+  colors = [
+    { name: 'Primary', value: '#3f51b5' },
+    { name: 'Accent', value: '#ff4081' },
+    { name: 'Warn', value: '#f44336' },
+    { name: 'Green', value: '#4caf50' },
+    { name: 'Purple', value: '#9c27b0' }
+  ];
+
+  constructor(
+    public dialogRef: MatDialogRef<PlanSettingsDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: any
+  ) {
+    if (data) {
+      this.planForm.patchValue(data);
+    }
+  }
+
+  onSave(): void {
+    if (this.planForm.valid) {
+      this.dialogRef.close(this.planForm.value);
+    }
+  }
+
+  onCancel(): void {
+    this.dialogRef.close();
+  }
+}
+
+--- Файл: D:\future-planner\src\app\components\task-dialog\task-dialog.component.html ---
+
+<h2 mat-dialog-title>{{ data.id ? 'Редактировать задачу' : 'Новая задача' }}</h2>
+
+<div mat-dialog-content>
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Название</mat-label>
+    <input matInput [(ngModel)]="data.name" required>
+  </mat-form-field>
+
+  <div class="time-fields">
+    <mat-form-field appearance="outline">
+      <mat-label>Начало</mat-label>
+      <input matInput type="time" [(ngModel)]="data.startTime" required>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Конец</mat-label>
+      <input matInput type="time" [(ngModel)]="data.endTime" required>
+    </mat-form-field>
+  </div>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Приоритет</mat-label>
+    <mat-select [(ngModel)]="data.priority">
+      <mat-option *ngFor="let priority of priorities" [value]="priority">
+        {{ priority }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Описание</mat-label>
+    <textarea matInput [(ngModel)]="data.description" rows="3"></textarea>
+  </mat-form-field>
+
+  <mat-checkbox [(ngModel)]="data.completed">Выполнено</mat-checkbox>
+</div>
+
+<div mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Отмена</button>
+  <button mat-raised-button color="primary" [disabled]="!data.name" (click)="dialogRef.close(data)">
+    Сохранить
+  </button>
+</div>
+
+--- Файл: D:\future-planner\src\app\components\task-dialog\task-dialog.component.scss ---
+
+.full-width {
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+  
+  .time-fields {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  
+    mat-form-field {
+      flex: 1;
+    }
+  }
+
+--- Файл: D:\future-planner\src\app\components\task-dialog\task-dialog.component.ts ---
+
+import { Component, Inject } from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatSelectModule } from '@angular/material/select';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { FormsModule } from '@angular/forms';
+import { Task } from '../../services/plan.model';
+
+@Component({
+  selector: 'app-task-dialog',
+  standalone: true,
+  imports: [
+    FormsModule,
+    MatInputModule,
+    MatButtonModule,
+    MatSelectModule,
+    MatCheckboxModule
+  ],
+  templateUrl: './task-dialog.component.html',
+  styleUrls: ['./task-dialog.component.scss']
+})
+export class TaskDialogComponent {
+  priorities = ['low', 'medium', 'high'];
+
+  constructor(
+    public dialogRef: MatDialogRef<TaskDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: Task
+  ) {}
+
+  onCancel(): void {
+    this.dialogRef.close();
+  }
+}
+
+--- Файл: D:\future-planner\src\app\services\ai-chat.service.ts ---
+
+// src/app/services/ai-chat.service.ts
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { catchError, map } from 'rxjs/operators';
+import { throwError } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root' // Или конкретный модуль, если используется
+})
+export class AIChatService {
+  private readonly API_URL = 'https://api.together.xyz/v1/chat/completions';
+  private readonly API_KEY = 'tgp_v1_yCkYhRMbF3fRCx_BfsGyiLsVPdj4CovE4Qw7sBaIfsw';
+
+  constructor(private http: HttpClient) {}
+
+  async sendMessage(messages: {role: string, content: string}[]): Promise<string> {
+    try {
+      const response = await this.http.post<any>(this.API_URL, {
+        model: 'mistralai/Mixtral-8x7B-Instruct-v0.1',
+        messages,
+        temperature: 0.7,
+        max_tokens: 1024
+      }, {
+        headers: {
+          'Authorization': `Bearer ${this.API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      }).pipe(
+        map(res => res.choices[0]?.message?.content || 'Не удалось получить ответ'),
+        catchError(err => {
+          console.error('API Error:', err);
+          return throwError(() => new Error('Ошибка соединения с нейросетью'));
+        })
+      ).toPromise();
+
+      return response;
+    } catch (error) {
+      console.error('Chat error:', error);
+      return 'Извините, произошла ошибка. Пожалуйста, попробуйте позже.';
+    }
+  }
+}
+
+--- Файл: D:\future-planner\src\app\services\ai-critic.service.ts ---
+
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+
+@Injectable({ providedIn: 'root' })
+export class AICriticService {
+  private readonly TOGETHER_API_URL = 'https://api.together.xyz/v1/completions';
+  private readonly API_KEY = 'tgp_v1_yCkYhRMbF3fRCx_BfsGyiLsVPdj4CovE4Qw7sBaIfsw'; // Замени на свой ключ
+
+  constructor(private http: HttpClient) {}
+
+  async criticizePlan(plan: string): Promise<string> {
+    const prompt = `
+      Разнеси этот план в хлам. Будь максимально жёстким и саркастичным. Укажи на все косяки:
+      ${plan}
+    `;
+
+    const response = await this.http.post<any>(this.TOGETHER_API_URL, {
+      model: 'mistralai/Mixtral-8x7B-Instruct-v0.1',
+      prompt,
+      max_tokens: 1000,
+      temperature: 0.9
+    }).toPromise();
+
+    return response.choices[0].text;
+  }
+}
+
+--- Файл: D:\future-planner\src\app\services\pdf-export.service.ts ---
+
+import { Injectable } from '@angular/core';
+
+// Объявляем pdfmake как глобальную переменную
+declare const pdfMake: any;
+declare const pdfFonts: any;
+
+@Injectable({ providedIn: 'root' })
+export class PdfExportService {
+  constructor() {
+    // Инициализация шрифтов
+    try {
+      pdfMake.vfs = pdfFonts.pdfMake?.vfs || pdfFonts.default?.pdfMake?.vfs;
+    } catch (e) {
+      console.error('Error initializing pdfmake fonts', e);
+    }
+  }
+
+  exportToPdf(plan: any): void {
+    const docDefinition = {
+      content: [
+        { text: plan.title, style: 'header' },
+        { text: `Старт: ${plan.startPoint}`, style: 'subheader' },
+        ...plan.branches.map((branch: any) => ({
+          text: branch.name,
+          style: 'branch'
+        }))
+      ],
+      styles: {
+        header: { fontSize: 18, bold: true },
+        subheader: { fontSize: 14, margin: [0, 10, 0, 5] },
+        branch: { fontSize: 12, margin: [0, 5, 0, 5] }
+      }
+    };
+
+    try {
+      pdfMake.createPdf(docDefinition).download(`${plan.title}.pdf`);
+    } catch (e) {
+      console.error('Error generating PDF', e);
+    }
+  }
+}
+
+--- Файл: D:\future-planner\src\app\services\plan.model.ts ---
+
+export interface Event {
+  id: string;
+  name: string;
+  date: Date;
+  description: string;
+  arguments: string[];
+  linkedEvents: string[];
+}
+
+export interface Task {
+  id: string;
+  name: string;
+  startTime: string;
+  endTime: string;
+  description: string;
+  completed: boolean;
+  priority: 'low' | 'medium' | 'high';
+}
+
+export interface DayPlan {
+  id: string;
+  date: Date;
+  tasks: Task[];
+  notes: string;
+}
+
+export interface BasePlan {
+  id: string;
+  title: string;
+  description: string;
+  startDate: Date;
+  endDate: Date;
+  days: DayPlan[];
+  branches: Branch[];
+  links?: PlanLink[];
+  color?: string;
+}
+
+export interface GlobalPlan extends BasePlan {
+  // Только базовые поля
+}
+
+export interface Plan extends BasePlan {
+  events: Event[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+export interface Branch {
+  position?: { x: number; y: number };
+  id: string;
+  name: string;
+  description: string;
+  arguments: string[];
+}
+
+export interface PlanLink {
+  source?: string;
+  target?: string;
+  label?: string;
+}
+
+--- Файл: D:\future-planner\src\app\services\plan.service.ts ---
+
+import { Injectable } from '@angular/core';
+import { Plan, DayPlan, Task, Event, Branch, PlanLink, GlobalPlan } from './plan.model';
+import { v4 as uuidv4 } from 'uuid';
+
+@Injectable({ providedIn: 'root' })
+export class PlanService {
+  private readonly STORAGE_KEY = 'future_planner_plans';
+
+  createNewPlan(title: string, startDate: Date, endDate: Date, color: string = '#3f51b5'): Plan {
+    const days: DayPlan[] = [];
+    const dayCount = this.getDaysDiff(startDate, endDate);
+    
+    for (let i = 0; i <= dayCount; i++) {
+      const date = new Date(startDate);
+      date.setDate(startDate.getDate() + i);
+      
+      days.push({
+        id: uuidv4(),
+        date,
+        tasks: [],
+        notes: ''
+      });
+    }
+  
+    const now = new Date();
+    return {
+      id: uuidv4(),
+      title,
+      description: '',
+      startDate,
+      endDate,
+      days,
+      branches: [],
+      links: [],
+      color,
+      events: [],
+      createdAt: now,
+      updatedAt: now
+    };
+  }
+  
+  // Исправленный savePlan
+  savePlan(plan: GlobalPlan | Plan): void {
+    try {
+      const plans = this.getAllPlans();
+      const index = plans.findIndex(p => p.id === plan.id);
+      
+      const planToSave: GlobalPlan = {
+        id: plan.id,
+        title: plan.title,
+        description: plan.description,
+        startDate: plan.startDate,
+        endDate: plan.endDate,
+        days: plan.days,
+        branches: plan.branches,
+        links: plan.links,
+        color: plan.color
+      };
+      
+      if (index >= 0) {
+        plans[index] = planToSave;
+      } else {
+        plans.push(planToSave);
+      }
+      
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(plans));
+    } catch (error) {
+      console.error('Ошибка сохранения плана', error);
+    }
+  }
+  
+  // Исправленный getLastPlan
+  getLastPlan(): Plan | null {
+    const plans = this.getAllPlans();
+    if (plans.length === 0) return null;
+    
+    const lastPlan = plans[plans.length - 1];
+    return {
+      ...lastPlan,
+      events: [],
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+  }
+  getAllPlans(): GlobalPlan[] {
+    try {
+      const data = localStorage.getItem(this.STORAGE_KEY);
+      const plans = data ? JSON.parse(data) : [];
+      return plans.map((plan: any) => ({
+        ...plan,
+        startDate: new Date(plan.startDate),
+        endDate: new Date(plan.endDate),
+        days: plan.days.map((day: any) => ({
+          ...day,
+          date: new Date(day.date),
+          tasks: day.tasks || []
+        })),
+        branches: plan.branches || [],
+        links: plan.links || [],
+        description: plan.description || '',
+        color: plan.color || '#3f51b5'
+      }));
+    } catch (error) {
+      console.error('Ошибка чтения планов из localStorage', error);
+      return [];
+    }
+  }
+  
+  private convertToGlobalPlan(plan: any): GlobalPlan {
+    return {
+      ...plan,
+      description: plan.description || '',
+      color: plan.color || '#3f51b5'
+    };
+  }
+  getPlanById(id: string): Plan | undefined {
+    const plan = this.getAllPlans().find(p => p.id === id);
+    if (!plan) return undefined;
+  
+    return {
+      ...plan,
+      events: [],
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+  }
+
+  deletePlan(id: string): void {
+    const plans = this.getAllPlans().filter(p => p.id !== id);
+    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(plans));
+  }
+
+  duplicatePlan(planId: string): Plan | null {
+    const plan = this.getPlanById(planId);
+    if (!plan) return null;
+
+    const newPlan: Plan = {
+      ...plan,
+      id: uuidv4(),
+      title: `${plan.title} (копия)`,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      branches: plan.branches.map(branch => ({
+        ...branch,
+        id: uuidv4()
+      })),
+      links: []
+    };
+
+    this.savePlan(newPlan);
+    return newPlan;
+  }
+
+  private getDaysDiff(start: Date, end: Date): number {
+    const diffTime = Math.abs(end.getTime() - start.getTime());
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  }
+
+  // Методы для работы с задачами
+  addTaskToPlan(planId: string, dayIndex: number, task: Omit<Task, 'id'>): void {
+    const plan = this.getPlanById(planId);
+    if (!plan || dayIndex < 0 || dayIndex >= plan.days.length) return;
+
+    const newTask: Task = {
+      ...task,
+      id: uuidv4()
+    };
+
+    plan.days[dayIndex].tasks.push(newTask);
+    this.savePlan(plan);
+  }
+
+  updateTask(planId: string, taskId: string, updates: Partial<Task>): void {
+    const plan = this.getPlanById(planId);
+    if (!plan) return;
+
+    for (const day of plan.days) {
+      const task = day.tasks.find(t => t.id === taskId);
+      if (task) {
+        Object.assign(task, updates);
+        this.savePlan(plan);
+        return;
+      }
+    }
+  }
+
+  // Методы для работы с событиями
+  addEventToPlan(planId: string, event: Omit<Event, 'id'>): void {
+    const plan = this.getPlanById(planId);
+    if (!plan) return;
+
+    const newEvent: Event = {
+      ...event,
+      id: uuidv4()
+    };
+
+    plan.events.push(newEvent);
+    this.savePlan(plan);
+  }
+
+  // Методы для работы с ветвями
+  addBranchToPlan(planId: string, branch: Omit<Branch, 'id'>): void {
+    const plan = this.getPlanById(planId);
+    if (!plan) return;
+
+    const newBranch: Branch = {
+      ...branch,
+      id: uuidv4()
+    };
+
+    plan.branches.push(newBranch);
+    this.savePlan(plan);
+  }
+
+  // Методы для работы со связями
+  addLinkToPlan(planId: string, link: PlanLink): void {
+    const plan = this.getPlanById(planId);
+    if (!plan) return;
+
+    if (!plan.links) plan.links = [];
+    plan.links.push(link);
+    this.savePlan(plan);
+  }
+}
+

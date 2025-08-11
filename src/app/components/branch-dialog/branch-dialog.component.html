@@ -1,0 +1,41 @@
+<h2 mat-dialog-title>{{ data.id ? 'Редактировать ветвь' : 'Новая ветвь' }}</h2>
+
+<div mat-dialog-content>
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Название</mat-label>
+    <input matInput [(ngModel)]="data.name" required>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Описание</mat-label>
+    <textarea matInput [(ngModel)]="data.description" rows="3"></textarea>
+  </mat-form-field>
+
+  <div class="arguments-section">
+    <h3>Аргументы</h3>
+    <div class="argument-list">
+      <div class="argument-item" *ngFor="let arg of data.arguments; let i = index">
+        <span>{{ arg }}</span>
+        <button mat-icon-button (click)="removeArgument(i)">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+    </div>
+    <div class="add-argument">
+      <mat-form-field appearance="outline" class="argument-input">
+        <mat-label>Новый аргумент</mat-label>
+        <input matInput [(ngModel)]="newArgument" (keyup.enter)="addArgument()">
+      </mat-form-field>
+      <button mat-raised-button color="primary" (click)="addArgument()">
+        <mat-icon>add</mat-icon> Добавить
+      </button>
+    </div>
+  </div>
+</div>
+
+<div mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Отмена</button>
+  <button mat-raised-button color="primary" [disabled]="!data.name" (click)="dialogRef.close(data)">
+    Сохранить
+  </button>
+</div>
